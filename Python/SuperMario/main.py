@@ -1,7 +1,7 @@
 # 游戏主要入口
 import pygame
 
-from source import tools
+from source import tools, setup
 
 
 def main():
