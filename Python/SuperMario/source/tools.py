@@ -1,14 +1,18 @@
 # 工具和游戏主控
+import os
 import pygame
 import random
+
+from . import constants as C
 
 
 class Game:
     def __init__(self):
         pygame.init()
-        pygame.display.set_mode((800, 600))
+        pygame.display.set_mode(C.SCREEN_SIZE)
         self.screen = pygame.display.get_surface()
         self.clock = pygame.time.Clock()
+        self.keys = pygame.key.get_pressed()
 
     def run(self):
         while True:
@@ -31,10 +35,9 @@ def load_graphics(path, accept=(".jpg", ".png", ".bmp", ".gif")):
     graphics = {}
     for pic in os.listdir(path):
         name, ext = os.path.splitext(pic)
-        if ext.lower() in accept:
-            img = pygame.image.load(os.path.join(path, pic))
-        else:
-            img = img.convert()
+        if ext.lower() not in accept:
+            continue
+        img = pygame.image.load(os.path.join(path, pic)).convert_alpha()
         graphics[name] = img
     return graphics
 
