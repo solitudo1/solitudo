@@ -1,9 +1,4 @@
 [build]
   base = "Frontend/SRInternetHomePageCOPY"
-  publish = "."
+  publish = "."          # ← 修复：使用当前目录
   command = "python build_static.py"
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
