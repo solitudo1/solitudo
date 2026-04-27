@@ -36,7 +36,9 @@ class Game:
         """更新游戏"""
         if self.current_state.done:
             self.flip_state()
-        self.current_state.update(self.screen, self.keys, self.clock.get_time())
+        # 获取按键状态
+        keys = pygame.key.get_pressed()
+        self.current_state.update(self.screen, keys, pygame.time.get_ticks())
     
     def flip_state(self):
         """切换游戏状态"""

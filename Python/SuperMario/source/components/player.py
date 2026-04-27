@@ -61,16 +61,16 @@ class Player(pygame.sprite.Sprite):
             
     def handle_keys(self, keys):
         """处理按键输入"""
-        if keys[pygame.K_LEFT]:
+        if keys.get(pygame.K_LEFT):
             self.v_x = -C.PLAYER_SPEED
             self.direction = 'left'
-        elif keys[pygame.K_RIGHT]:
+        elif keys.get(pygame.K_RIGHT):
             self.v_x = C.PLAYER_SPEED
             self.direction = 'right'
         else:
             self.v_x = 0
             
-        if keys[pygame.K_SPACE] and self.on_ground and self.can_jump:
+        if keys.get(pygame.K_SPACE) and self.on_ground and self.can_jump:
             self.jump()
             
     def jump(self):

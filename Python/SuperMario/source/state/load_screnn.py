@@ -46,7 +46,7 @@ class GameOver(LoadScreen):
         """创建游戏结束文字"""
         font = pygame.font.Font(None, 74)
         game_over_text = font.render('GAME OVER', True, C.WHITE)
-        rect = game_over_text.get_rect(center=C.SCREEN_SIZE[0]//2, C.SCREEN_SIZE[1]//2)
+        rect = game_over_text.get_rect(center=(C.SCREEN_SIZE[0]//2, C.SCREEN_SIZE[1]//2))
         return (game_over_text, rect)
         
     def update(self, surface, keys, current_time):

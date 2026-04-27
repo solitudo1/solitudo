@@ -53,11 +53,11 @@ class MainMenu:
         
     def handle_events(self, keys):
         """处理菜单事件"""
-        if keys[pygame.K_UP]:
+        if keys.get(pygame.K_UP):
             self.selected_option = (self.selected_option - 1) % len(self.options)
-        elif keys[pygame.K_DOWN]:
+        elif keys.get(pygame.K_DOWN):
             self.selected_option = (self.selected_option + 1) % len(self.options)
-        elif keys[pygame.K_RETURN]:
+        elif keys.get(pygame.K_RETURN):
             if self.selected_option == 0:  # 开始游戏
                 self.done = True
             elif self.selected_option == 1:  # 退出游戏
