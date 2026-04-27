@@ -25,3 +25,25 @@ class Game:
             )
             pygame.display.update()
             self.clock.tick(60)
+
+
+def load_graphics(path, accept=(".jpg", ".png", ".bmp", ".gif")):
+    graphics = {}
+    for pic in os.listdir(path):
+        name, ext = os.path.splitext(pic)
+        if ext.lower() in accept:
+            img = pygame.image.load(os.path.join(path, pic))
+        else:
+            img = img.convert()
+        graphics[name] = img
+    return graphics
+
+
+def get_image(sheet, x, y, width, height, colorkey, scale):
+    image = pygame.Surface((width, height))
+    image.blit(
+        sheet, (0, 0), (x, y, width, height)
+    )  # 0，0 代表画到哪个位置，x,y,w,h代表sheet里哪个区域要取出来
+    image.set_colorkey(colorkey)
+    image = pygame.transform.scale(image, (width * scale, height * scale))
+    return image
