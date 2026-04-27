@@ -203,8 +203,8 @@ def get_github_user_info():
         ]
     }
 
-# 获取用户的GitHub活动数据（按天统计活跃天数和里程碑）
-# 从用户首次活跃开始计算，记录累计活跃天数达到7天、30天等里程碑
+# 获取用户的GitHub活动数据（按天统计每日贡献次数）
+# 从用户首次活跃开始计算，记录每天的提交/推送次数
 def get_github_activity_data(username, repos=None):
     try:
         print(f"开始获取GitHub活动数据: {username}")
@@ -212,8 +212,8 @@ def get_github_activity_data(username, repos=None):
         from datetime import datetime, timedelta
         now = datetime.now()
         
-        # 用于存储每天的活跃状态（日期 -> 是否有活动）
-        active_days = set()
+        # 用于存储每天的贡献次数（日期 -> 贡献次数）
+        daily_contributions = {}
         
         # 1. 通过用户Events API获取PushEvent数据
         page = 1
@@ -242,7 +242,11 @@ def get_github_activity_data(username, repos=None):
                     
                     # 将日期转换为字符串格式（只保留年月日）
                     day_key = event_date.strftime('%Y-%m-%d')
-                    active_days.add(day_key)
+                    
+                    # 统计该日的贡献次数
+                    if day_key not in daily_contributions:
+                        daily_contributions[day_key] = 0
+                    daily_contributions[day_key] += 1
             
             page += 1
         
@@ -269,61 +273,47 @@ def get_github_activity_data(username, repos=None):
                             
                             # 将日期转换为字符串格式
                             day_key = commit_date.strftime('%Y-%m-%d')
-                            active_days.add(day_key)
+                            
+                            # 统计该日的贡献次数
+                            if day_key not in daily_contributions:
+                                daily_contributions[day_key] = 0
+                            daily_contributions[day_key] += 1
                 except Exception as e:
                     print(f"获取仓库 {repo['name']} 的提交历史时出错: {e}")
                     continue
         
         # 3. 如果没有获取到任何活动数据，返回默认数据
-        if not active_days:
+        if not daily_contributions:
             print("没有获取到活动数据，返回默认数据")
             return [65, 59, 80, 81, 56, 55, 70, 65, 85, 75, 60, 75]
         
         # 4. 将活跃日期排序，找到最早的活跃日期
-        sorted_dates = sorted([datetime.strptime(d, '%Y-%m-%d') for d in active_days])
+        sorted_dates = sorted([datetime.strptime(d, '%Y-%m-%d') for d in daily_contributions.keys()])
         first_active_date = sorted_dates[0]
         
         # 5. 计算从首次活跃到现在的总天数
         total_days = (now - first_active_date).days + 1  # +1 包含今天
         
-        # 6. 创建每日活跃度数组（0表示不活跃，1表示活跃）
-        daily_activity = [0] * total_days
+        # 6. 创建每日贡献次数数组
+        daily_counts = [0] * total_days
         
-        for active_date in sorted_dates:
+        for date_str, count in daily_contributions.items():
+            active_date = datetime.strptime(date_str, '%Y-%m-%d')
             days_since_start = (active_date - first_active_date).days
             if 0 <= days_since_start < total_days:
-                daily_activity[days_since_start] = 1
+                daily_counts[days_since_start] = count
         
-        # 7. 计算累计活跃天数和里程碑
-        cumulative_active_days = []
-        current_cumulative = 0
-        milestones = []  # 记录达到的里程碑（7天、30天等）
-        
-        for i, is_active in enumerate(daily_activity):
-            if is_active:
-                current_cumulative += 1
-            
-            cumulative_active_days.append(current_cumulative)
-            
-            # 检查是否达到新的里程碑
-            if current_cumulative in [7, 30, 60, 90, 180, 365]:
-                milestones.append({
-                    'day_index': i,
-                    'cumulative_days': current_cumulative,
-                    'date': (first_active_date + timedelta(days=i)).strftime('%Y-%m-%d')
-                })
-        
-        # 8. 如果数据点太多，进行采样（最多显示100个点）
-        if len(cumulative_active_days) > 100:
+        # 7. 如果数据点太多，进行采样（最多显示100个点）
+        if len(daily_counts) > 100:
             # 均匀采样
-            step = len(cumulative_active_days) // 100
-            sampled_data = cumulative_active_days[::step]
+            step = len(daily_counts) // 100
+            sampled_data = daily_counts[::step]
             # 确保最后一个点被包含
             if len(sampled_data) < 100:
-                sampled_data.append(cumulative_active_days[-1])
+                sampled_data.append(daily_counts[-1])
             return sampled_data[:100]
         
-        return cumulative_active_days
+        return daily_counts
     
     except Exception as e:
         print(f"获取GitHub活动数据异常: {e}")
