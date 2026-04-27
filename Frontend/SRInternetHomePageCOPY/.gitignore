@@ -1,4 +1,4 @@
-/sln# Python
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -66,4 +66,6 @@ static_build1/
 
 # 不需要workflows目录
 .github/workflows/
+
+# 生成的静态文件（保留这个，因为它是动态生成的）
 index.html
