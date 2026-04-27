@@ -1,0 +1,9 @@
+[build]
+  base = "Frontend/SRInternetHomePageCOPY"
+  publish = "Frontend/SRInternetHomePageCOPY"
+  command = "python build_static.py"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
