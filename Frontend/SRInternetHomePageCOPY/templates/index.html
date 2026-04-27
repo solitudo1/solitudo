@@ -656,10 +656,19 @@
                 const isDark = htmlElement.classList.contains('dark');
                 const textColor = isDark ? '#9CA3AF' : '#4B5563';
                 
+                // 生成过去12个月的标签（从最早到最近）
+                const now = new Date();
+                const monthLabels = [];
+                for (let i = 11; i >= 0; i--) {
+                    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                    const monthName = date.toLocaleDateString('zh-CN', { month: 'long' });
+                    monthLabels.push(monthName);
+                }
+                
                 new Chart(ctx, {
                     type: 'line',
                     data: {
-                        labels: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+                        labels: monthLabels,
                         datasets: [{
                             label: '代码提交',
                             data: {{ github_info.activity_data | tojson }},
