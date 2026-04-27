@@ -17,10 +17,10 @@ JUMP_STRENGTH = -15
 PLAYER_SPEED = 4
 
 # 玩家初始状态
-SMALL = 'small'
-BIG = 'big'
-FIREFLOWER = 'fireflower'
+SMALL = "small"
+BIG = "big"
+FIREFLOWER = "fireflower"
 
 # 敌人类型
-GOOMBA = 'goomba'
-KOOPA = 'koopa'
+GOOMBA = "goomba"
+KOOPA = "koopa"
