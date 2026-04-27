@@ -27,7 +27,7 @@ class Coin(pygame.sprite.Sprite):
         self.rect.y = self.y
         self.start_y = self.y
         self.bounce_height = 10
-        self.original_pos = (x, y)
+        self.original_pos = (self.x, self.y)
         
     def update(self, game_info, *args):
         """更新金币动画"""
