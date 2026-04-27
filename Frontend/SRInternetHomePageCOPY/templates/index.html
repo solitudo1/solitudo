@@ -650,32 +650,78 @@
                 }
             });
             
-            // 活动图表
+            // 活动图表 - 显示累计活跃天数
             const ctx = document.getElementById('activityChart');
             if (ctx) {
                 const isDark = htmlElement.classList.contains('dark');
                 const textColor = isDark ? '#9CA3AF' : '#4B5563';
                 
-                // 生成过去12个月的标签（从最早到最近）
+                const activityData = {{ github_info.activity_data | tojson }};
+                const totalDays = activityData.length;
+                
+                // 生成日期标签（从首次活跃开始）
                 const now = new Date();
-                const monthLabels = [];
-                for (let i = 11; i >= 0; i--) {
-                    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-                    const monthName = date.toLocaleDateString('zh-CN', { month: 'long' });
-                    monthLabels.push(monthName);
+                const labels = [];
+                const step = Math.max(1, Math.floor(totalDays / 20)); // 最多显示20个标签
+                
+                for (let i = 0; i < totalDays; i += step) {
+                    const date = new Date(now);
+                    date.setDate(date.getDate() - (totalDays - 1 - i));
+                    const dateStr = date.toLocaleDateString('zh-CN', { 
+                        year: 'numeric', 
+                        month: 'short', 
+                        day: 'numeric' 
+                    });
+                    labels.push(dateStr);
                 }
+                
+                // 如果最后一个点没有被包含，添加它
+                if ((totalDays - 1) % step !== 0) {
+                    const lastDate = new Date(now);
+                    const lastDateStr = lastDate.toLocaleDateString('zh-CN', { 
+                        year: 'numeric', 
+                        month: 'short', 
+                        day: 'numeric' 
+                    });
+                    labels.push(lastDateStr);
+                }
+                
+                // 查找里程碑点（7天、30天、60天、90天、180天、365天）
+                const milestoneValues = [7, 30, 60, 90, 180, 365];
+                const milestonePoints = [];
+                const milestoneLabels = [];
+                
+                activityData.forEach((value, index) => {
+                    if (milestoneValues.includes(value)) {
+                        milestonePoints.push({
+                            x: index,
+                            y: value
+                        });
+                        milestoneLabels.push(`${value}天`);
+                    }
+                });
                 
                 new Chart(ctx, {
                     type: 'line',
                     data: {
-                        labels: monthLabels,
+                        labels: labels,
                         datasets: [{
-                            label: '代码提交',
-                            data: {{ github_info.activity_data | tojson }},
+                            label: '累计活跃天数',
+                            data: activityData,
                             borderColor: isDark ? '{{ config.theme.dark_primary_color }}' : '{{ config.theme.primary_color }}',
                             backgroundColor: isDark ? 'rgba(168, 85, 247, 0.1)' : 'rgba(106, 17, 203, 0.1)',
-                            tension: 0.4,
-                            fill: true
+                            tension: 0.3,
+                            fill: true,
+                            pointRadius: activityData.map((v, i) => {
+                                // 在里程碑点显示较大的圆点
+                                return milestoneValues.includes(v) ? 6 : 2;
+                            }),
+                            pointBackgroundColor: activityData.map((v, i) => {
+                                return milestoneValues.includes(v) ? '#f59e0b' : (isDark ? '{{ config.theme.dark_primary_color }}' : '{{ config.theme.primary_color }}');
+                            }),
+                            pointBorderColor: activityData.map((v, i) => {
+                                return milestoneValues.includes(v) ? '#f59e0b' : (isDark ? '{{ config.theme.dark_primary_color }}' : '{{ config.theme.primary_color }}');
+                            })
                         }]
                     },
                     options: {
@@ -687,12 +733,49 @@
                             },
                             tooltip: {
                                 mode: 'index',
-                                intersect: false
+                                intersect: false,
+                                callbacks: {
+                                    title: function(context) {
+                                        return `第 ${context[0].dataIndex + 1} 天`;
+                                    },
+                                    label: function(context) {
+                                        const value = context.parsed.y;
+                                        let label = `累计活跃: ${value} 天`;
+                                        
+                                        // 检查是否是里程碑
+                                        if ([7, 30, 60, 90, 180, 365].includes(value)) {
+                                            label += ' 🎉 里程碑!';
+                                        }
+                                        
+                                        return label;
+                                    }
+                                }
+                            },
+                            annotation: {
+                                annotations: milestonePoints.map((point, idx) => ({
+                                    type: 'point',
+                                    xValue: point.x,
+                                    yValue: point.y,
+                                    backgroundColor: 'rgba(245, 158, 11, 0.3)',
+                                    borderColor: '#f59e0b',
+                                    borderWidth: 2,
+                                    radius: 8,
+                                    label: {
+                                        content: milestoneLabels[idx],
+                                        enabled: true,
+                                        position: 'top'
+                                    }
+                                }))
                             }
                         },
                         scales: {
                             y: {
                                 beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: '累计活跃天数',
+                                    color: textColor
+                                },
                                 grid: {
                                     color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
                                 },
@@ -701,11 +784,18 @@
                                 }
                             },
                             x: {
+                                title: {
+                                    display: true,
+                                    text: '时间线',
+                                    color: textColor
+                                },
                                 grid: {
                                     display: false
                                 },
                                 ticks: {
-                                    color: textColor
+                                    color: textColor,
+                                    maxRotation: 45,
+                                    minRotation: 45
                                 }
                             }
                         }
