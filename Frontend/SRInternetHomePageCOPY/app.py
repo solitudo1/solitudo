@@ -11,7 +11,12 @@ from flask import Flask, render_template_string
 import jinja2
 import shutil
 
-app = Flask(__name__)
+# 获取当前脚本所在目录
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+app = Flask(__name__, 
+            template_folder=os.path.join(BASE_DIR, 'templates'),
+            static_folder=BASE_DIR)
 
 # 导入必要的库
 import time
